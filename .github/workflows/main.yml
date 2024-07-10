@@ -1,0 +1,45 @@
+name: Build Docker Image
+
+on:
+  push:
+    tags:
+    - v*
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build'
+        required: true
+        type: string
+
+permissions:
+  packages: write
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone source repo
+      run: |-
+        git clone https://github.com/twitter/twemproxy.git
+        cd twemproxy
+        git checkout --detach refs/tags/${{ inputs.tag }}
+
+    - name: Login to GHCR
+      uses: docker/login-action@v2
+      with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build docker image
+      working-directory: twemproxy
+      run: make -f ../Makefile build IMAGE_NAME=${{ env.IMAGE }} IMAGE_TAG=${{ inputs.tag }}
+
+    - name: Push docker image
+      run: make -f ../Makefile push IMAGE_NAME=${{ env.IMAGE }} IMAGE_TAG=${{ inputs.tag }}
