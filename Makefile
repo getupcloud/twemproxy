@@ -5,7 +5,7 @@ IMAGE      := $(IMAGE_NAME):$(IMAGE_TAG)
 all: build push
 
 build:
-	docker build . -t $(IMAGE)
+	docker build . -t $(IMAGE) $(ARGS)
 
 push:
-	docker push $(IMAGE)
+	docker push $(IMAGE) $(ARGS)

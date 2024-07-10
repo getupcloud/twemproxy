@@ -42,9 +42,12 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build docker image
+    - name: Build base image
       working-directory: ./twemproxy
-      run: ls -la; pwd; make -f ../Makefile build IMAGE_NAME=${{ env.IMAGE }} IMAGE_TAG=${{ inputs.tag }}
+      run: make -f ../Makefile build IMAGE_NAME=nutcracker IMAGE_TAG=${{ inputs.tag }}
+
+    - name: Build final image
+      run: make -f ../Makefile build IMAGE_NAME=${{ env.IMAGE }} IMAGE_TAG=${{ inputs.tag }} ARGS="--build-arg BUILDER=nutcracker:${{ inputs.tag }}"
 
     - name: Push docker image
       working-directory: ./twemproxy
